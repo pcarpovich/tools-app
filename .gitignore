@@ -1,0 +1,19 @@
+# Ignorar el entorno virtual
+venv/
+
+# Ignorar archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar archivos de logs
+logs/
+*.log
+
+# Ignorar credenciales o configuraciones sensibles
+*.env
+.env/
+
+# Ignorar dependencias de paquetes (si no se usan en producción)
+*.egg-info/
