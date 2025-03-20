@@ -3,96 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tools - Blumas</title>
+    <title>Tools App - Blumas</title>
+
+    <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <style>
-        body {
-            background-color: #E0F2F1; /* Teal claro */
-        }
-        .container {
-            margin-top: 50px;
-        }
-        .btn-large {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-    </style>
+    <!-- Iconos de Materialize -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 
-    <div class="container">
-        <h4 class="center teal-text">Panel de Herramientas</h4>
+    <div class="container center-align">
+        <h4 class="teal-text text-darken-3">Tools App - Blumas</h4>
 
-        <button class="btn-large waves-effect waves-light teal" onclick="ejecutarHoras()">
-            Ejecutar Horas-Server
-        </button>
-
-        <button class="btn-large waves-effect waves-light teal lighten-2 modal-trigger" data-target="modalDescarga">
-            Descargar CSV
-        </button>
-
-        <button class="btn-large waves-effect waves-light teal lighten-3" onclick="mostrarArchivos()">
-            Ver Últimos 10 Archivos
-        </button>
+        <div class="row">
+            <!-- Botón Ejecutar Horas -->
+            <div class="col s12 m6">
+                <button class="btn-large waves-effect waves-light teal darken-2" id="btnEjecutar">
+                    <i class="material-icons left">play_arrow</i> Ejecutar Horas
+                </button>
+            </div>
+            <!-- Botón Descargar CSV -->
+            <div class="col s12 m6">
+                <button class="btn-large waves-effect waves-light teal darken-3 modal-trigger" data-target="modalDescargar">
+                    <i class="material-icons left">cloud_download</i> Descargar CSV
+                </button>
+            </div>
+            <!-- Botón Listar Archivos -->
+            <div class="col s12">
+                <button class="btn-large waves-effect waves-light teal darken-4" id="btnListar">
+                    <i class="material-icons left">list</i> Ver Últimos Archivos
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Modal para solicitar YYYYMM -->
-    <div id="modalDescarga" class="modal">
+    <!-- Modal para Descargar CSV -->
+    <div id="modalDescargar" class="modal">
         <div class="modal-content">
-            <h5>Ingresar YYYYMM</h5>
-            <input type="text" id="inputYYYYMM" placeholder="Ejemplo: 202503">
+            <h5>Descargar CSV</h5>
+            <div class="input-field">
+                <input type="text" id="inputFecha" placeholder="YYYYMM">
+                <label for="inputFecha">Ingrese la fecha</label>
+            </div>
         </div>
         <div class="modal-footer">
-            <button class="modal-close waves-effect waves-green btn-flat">Cancelar</button>
-            <button class="waves-effect waves-light btn teal" onclick="descargarCSV()">Descargar</button>
+            <button class="modal-close btn waves-effect waves-light red">Cerrar</button>
+            <button class="btn waves-effect waves-light teal darken-2" id="btnDescargar">
+                <i class="material-icons left">cloud_download</i> Descargar
+            </button>
         </div>
     </div>
 
-    <!-- Modal para mostrar archivos -->
+    <!-- Modal para Mostrar la Lista de Archivos -->
     <div id="modalArchivos" class="modal">
         <div class="modal-content">
-            <h5>Últimos 10 Archivos Generados</h5>
+            <h5>Últimos Archivos Generados</h5>
             <ul id="listaArchivos"></ul>
         </div>
         <div class="modal-footer">
-            <button class="modal-close waves-effect waves-green btn-flat">Cerrar</button>
+            <button class="modal-close btn waves-effect waves-light red">Cerrar</button>
         </div>
     </div>
 
-    <!-- Scripts de Materialize y JS -->
+    <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            M.Modal.init(document.querySelectorAll('.modal'));
-        });
+    <!-- JavaScript personalizado -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-        function ejecutarHoras() {
-            fetch('/ejecutar-horas', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => M.toast({html: data.message}))
-                .catch(error => M.toast({html: 'Error ejecutando el script'}));
-        }
-
-        function descargarCSV() {
-            let yyyymm = document.getElementById("inputYYYYMM").value;
-            window.location.href = "/descargar-csv/" + yyyymm;
-        }
-
-        function mostrarArchivos() {
-            fetch('/listar-archivos')
-                .then(response => response.json())
-                .then(data => {
-                    let lista = document.getElementById("listaArchivos");
-                    lista.innerHTML = "";
-                    data.archivos.forEach(archivo => {
-                        let li = document.createElement("li");
-                        li.innerHTML = `<a href="/csv_reports/${archivo}" target="_blank">${archivo}</a>`;
-                        lista.appendChild(li);
-                    });
-                    M.Modal.getInstance(document.getElementById("modalArchivos")).open();
-                })
-                .catch(error => M.toast({html: 'Error obteniendo archivos'}));
-        }
-    </script>
 </body>
 </html>

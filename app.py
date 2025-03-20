@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, render_template, jsonify, send_from_directory
 import os
 import subprocess
 
@@ -7,8 +7,8 @@ app = Flask(__name__)
 CSV_PATH = "/var/www/html/csv_reports/"
 
 @app.route('/')
-def home():
-    return "Tools App - Blumas"
+def index():
+    return render_template("index.html")
 
 @app.route('/ejecutar-horas', methods=['GET', 'POST'])
 def ejecutar_horas():
