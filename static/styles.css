@@ -1,10 +1,23 @@
-body {
-    background-color: #E0F2F1; /* Teal claro */
+/* Ajuste del tamaño del modal para que no tenga scroll */
+.modal {
+    max-width: 90%;
+    width: 400px;
+    overflow: hidden; /* Evita la barra de desplazamiento */
 }
-.container {
-    margin-top: 50px;
+
+/* Ajustar el Datepicker dentro del modal */
+.datepicker-modal {
+    max-height: 300px !important; /* Ajuste de altura */
+    overflow: hidden !important; /* Evita que sobresalga */
 }
-.btn-large {
-    width: 100%;
-    margin-bottom: 10px;
+
+/* Ajustar el contenido del modal */
+.modal-content {
+    overflow: hidden !important; /* Evita barras de desplazamiento */
+}
+
+/* Ajuste del spinner en el modal */
+#modalProcesando .preloader-wrapper {
+    width: 50px !important;
+    height: 50px !important;
 }

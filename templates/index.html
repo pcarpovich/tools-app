@@ -4,73 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tools App - Blumas</title>
-
+    
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <!-- Iconos de Materialize -->
+    
+    <!-- Íconos de Materialize -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            background-color: #e0f2f1; /* Fondo en tono Teal claro */
+            text-align: center;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .btn-large {
+            width: 100%;
+            max-width: 300px;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #00796b; /* Color Teal oscuro */
+        }
+        .btn-large i {
+            margin-right: 8px;
+        }
+        .modal {
+            max-width: 400px;
+        }
+        /* Centrar el spinner en pantalla */
+        #spinnerContainer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .preloader-wrapper {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container center-align">
-        <h4 class="teal-text text-darken-3">Tools App - Blumas</h4>
+    <div class="container">
+        <h4 class="teal-text text-darken-4">Tools App - Blumas</h4>
 
-        <div class="row">
-            <!-- Botón Ejecutar Horas -->
-            <div class="col s12 m6">
-                <button class="btn-large waves-effect waves-light teal darken-2" id="btnEjecutar">
-                    <i class="material-icons left">play_arrow</i> Ejecutar Horas
-                </button>
-            </div>
-            <!-- Botón Descargar CSV -->
-            <div class="col s12 m6">
-                <button class="btn-large waves-effect waves-light teal darken-3 modal-trigger" data-target="modalDescargar">
-                    <i class="material-icons left">cloud_download</i> Descargar CSV
-                </button>
-            </div>
-            <!-- Botón Listar Archivos -->
-            <div class="col s12">
-                <button class="btn-large waves-effect waves-light teal darken-4" id="btnListar">
-                    <i class="material-icons left">list</i> Ver Últimos Archivos
-                </button>
-            </div>
+        <button id="ejecutarHoras" class="btn-large waves-effect waves-light">
+            <i class="material-icons left">access_time</i> Ejecutar Horas
+        </button>
+
+        <button id="descargarCSV" class="btn-large waves-effect waves-light modal-trigger" data-target="modalFecha">
+            <i class="material-icons left">file_download</i> Descargar CSV
+        </button>
+
+        <button id="verArchivos" class="btn-large waves-effect waves-light">
+            <i class="material-icons left">folder</i> Ver Últimos Archivos
+        </button>
+    </div>
+
+    <!-- Modal para seleccionar fecha -->
+    <div id="modalFecha" class="modal">
+        <div class="modal-content">
+            <h5>Seleccionar Fecha</h5>
+            <input type="text" id="datepicker" class="datepicker" placeholder="Seleccionar Mes y Año">
+        </div>
+        <div class="modal-footer">
+            <button id="confirmarDescarga" class="btn waves-effect waves-light">Descargar</button>
         </div>
     </div>
 
-    <!-- Modal para Descargar CSV -->
-    <div id="modalDescargar" class="modal">
+    <!-- Modal para mostrar mensajes -->
+    <div id="modalMensaje" class="modal">
         <div class="modal-content">
-            <h5>Descargar CSV</h5>
-            <div class="input-field">
-                <input type="text" id="inputFecha" placeholder="YYYYMM">
-                <label for="inputFecha">Ingrese la fecha</label>
-            </div>
+            <h5 id="mensajeTitulo"></h5>
+            <p id="mensajeTexto"></p>
         </div>
         <div class="modal-footer">
-            <button class="modal-close btn waves-effect waves-light red">Cerrar</button>
-            <button class="btn waves-effect waves-light teal darken-2" id="btnDescargar">
-                <i class="material-icons left">cloud_download</i> Descargar
-            </button>
+            <button class="modal-close btn waves-effect waves-light">Cerrar</button>
         </div>
     </div>
 
-    <!-- Modal para Mostrar la Lista de Archivos -->
-    <div id="modalArchivos" class="modal">
-        <div class="modal-content">
-            <h5>Últimos Archivos Generados</h5>
-            <ul id="listaArchivos"></ul>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-close btn waves-effect waves-light red">Cerrar</button>
+    <!-- Spinner de carga -->
+    <div id="spinnerContainer">
+        <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue">
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
         </div>
     </div>
 
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    
     <!-- JavaScript personalizado -->
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Materialize Modals
+            M.Modal.init(document.querySelectorAll('.modal'));
+
+            // Inicializar Datepicker con mejoras
+            let datepickerInstances = M.Datepicker.init(document.querySelectorAll('.datepicker'), {
+                format: 'yyyy-mm',
+                minDate: new Date(2020, 0, 1),
+                maxDate: new Date(),
+                yearRange: [2020, 2025],
+                container: 'body', // Evita que se corte en el modal
+                autoClose: true
+            });
+
+            // Función para mostrar y ocultar spinner
+            function mostrarSpinner() {
+                document.getElementById("spinnerContainer").style.display = "flex";
+            }
+            function ocultarSpinner() {
+                document.getElementById("spinnerContainer").style.display = "none";
+            }
+
+            // Botón Ejecutar Horas
+            document.getElementById('ejecutarHoras').addEventListener('click', function() {
+                mostrarSpinner();
+                fetch('/ejecutar-horas', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        ocultarSpinner();
+                        mostrarMensaje("Proceso Completado", data.message);
+                    })
+                    .catch(error => {
+                        ocultarSpinner();
+                        mostrarMensaje("Error", "Hubo un problema al ejecutar el proceso.");
+                    });
+            });
+
+            // Botón Confirmar Descarga
+            document.getElementById('confirmarDescarga').addEventListener('click', function() {
+                let fechaSeleccionada = document.getElementById('datepicker').value.replace('-', '');
+                if (fechaSeleccionada) {
+                    window.location.href = `/descargar-csv/${fechaSeleccionada}`;
+                } else {
+                    mostrarMensaje("Error", "Selecciona una fecha válida.");
+                }
+            });
+
+            // Botón Ver Últimos Archivos
+            document.getElementById('verArchivos').addEventListener('click', function() {
+                fetch('/listar-archivos')
+                    .then(response => response.json())
+                    .then(data => {
+                        let contenido = "";
+                        data.archivos.forEach(archivo => {
+                            contenido += `<p><strong>${archivo.nombre}</strong> - ${archivo.fecha}</p>`;
+                        });
+                        mostrarMensaje("Últimos Archivos Generados", contenido || "No hay archivos disponibles.");
+                    })
+                    .catch(error => mostrarMensaje("Error", "No se pudo obtener la lista de archivos."));
+            });
+
+            function mostrarMensaje(titulo, mensaje) {
+                document.getElementById('mensajeTitulo').textContent = titulo;
+                document.getElementById('mensajeTexto').innerHTML = mensaje;
+                let instance = M.Modal.getInstance(document.getElementById('modalMensaje'));
+                instance.open();
+            }
+        });
+    </script>
 
 </body>
 </html>
