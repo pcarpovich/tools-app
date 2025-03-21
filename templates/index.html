@@ -1,184 +1,230 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tools App - Blumas</title>
-    
-    <!-- Materialize CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    
-    <!-- Íconos de Materialize -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <!-- Estilos personalizados -->
-    <style>
-        body {
-            background-color: #e0f2f1; /* Fondo en tono Teal claro */
-            text-align: center;
-        }
-        .container {
-            margin-top: 50px;
-        }
-        .btn-large {
-            width: 100%;
-            max-width: 300px;
-            margin: 10px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #00796b; /* Color Teal oscuro */
-        }
-        .btn-large i {
-            margin-right: 8px;
-        }
-        .modal {
-            max-width: 400px;
-        }
-        /* Centrar el spinner en pantalla */
-        #spinnerContainer {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .preloader-wrapper {
-            width: 50px;
-            height: 50px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tools App - Blumas</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+  <style>
+    body {
+      background-color: #e0f2f1;
+      padding: 20px;
+    }
+
+    h4 {
+      text-align: center;
+      color: #00695c;
+      font-weight: 600;
+    }
+
+    .btn-large {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .spinner-modal {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 150px;
+    }
+
+    .modal-content {
+      text-align: center;
+    }
+
+    /* Ajustes del Datepicker para móviles */
+    @media (max-width: 600px) {
+      .datepicker-modal {
+        max-width: 85% !important;
+        max-height: 280px !important;
+        font-size: 0.9rem !important;
+      }
+
+      .datepicker-table td,
+      .datepicker-table th {
+        font-size: 0.85rem !important;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h4>Tools App - Blumas</h4>
 
-    <div class="container">
-        <h4 class="teal-text text-darken-4">Tools App - Blumas</h4>
+    <button id="ejecutarHoras" class="btn-large teal lighten-2 waves-effect">
+      <i class="material-icons left">schedule</i> Ejecutar Horas
+    </button>
 
-        <button id="ejecutarHoras" class="btn-large waves-effect waves-light">
-            <i class="material-icons left">access_time</i> Ejecutar Horas
-        </button>
+    <button id="descargarCSV" class="btn-large teal lighten-2 waves-effect modal-trigger" data-target="modal-fecha">
+      <i class="material-icons left">file_download</i> Descargar CSV
+    </button>
 
-        <button id="descargarCSV" class="btn-large waves-effect waves-light modal-trigger" data-target="modalFecha">
-            <i class="material-icons left">file_download</i> Descargar CSV
-        </button>
+    <button id="listarArchivos" class="btn-large teal lighten-2 waves-effect">
+      <i class="material-icons left">list</i> Ver Últimos Archivos
+    </button>
 
-        <button id="verArchivos" class="btn-large waves-effect waves-light">
-            <i class="material-icons left">folder</i> Ver Últimos Archivos
-        </button>
+    <!-- Modal Fecha -->
+    <div id="modal-fecha" class="modal">
+      <div class="modal-content">
+        <h5>Seleccionar Mes</h5>
+        <input type="text" id="fechaInput" class="datepicker" placeholder="Elegí un mes" />
+      </div>
+      <div class="modal-footer">
+        <a href="#!" id="confirmarFecha" class="modal-close waves-effect waves-green btn-flat">Descargar</a>
+      </div>
     </div>
 
-    <!-- Modal para seleccionar fecha -->
-    <div id="modalFecha" class="modal">
-        <div class="modal-content">
-            <h5>Seleccionar Fecha</h5>
-            <input type="text" id="datepicker" class="datepicker" placeholder="Seleccionar Mes y Año">
+    <!-- Modal Spinner -->
+    <div id="modal-spinner" class="modal">
+      <div class="modal-content spinner-modal">
+        <div class="preloader-wrapper small active">
+          <div class="spinner-layer spinner-teal-only">
+            <div class="circle-clipper left"><div class="circle"></div></div>
+            <div class="gap-patch"><div class="circle"></div></div>
+            <div class="circle-clipper right"><div class="circle"></div></div>
+          </div>
         </div>
-        <div class="modal-footer">
-            <button id="confirmarDescarga" class="btn waves-effect waves-light">Descargar</button>
-        </div>
+        <p>Procesando...</p>
+      </div>
     </div>
 
-    <!-- Modal para mostrar mensajes -->
-    <div id="modalMensaje" class="modal">
-        <div class="modal-content">
-            <h5 id="mensajeTitulo"></h5>
-            <p id="mensajeTexto"></p>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-close btn waves-effect waves-light">Cerrar</button>
-        </div>
+    <!-- Modal Mensaje -->
+    <div id="modal-mensaje" class="modal">
+      <div class="modal-content">
+        <h5 id="mensajeTexto"></h5>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+      </div>
     </div>
 
-    <!-- Spinner de carga -->
-    <div id="spinnerContainer">
-        <div class="preloader-wrapper active">
-            <div class="spinner-layer spinner-blue">
-                <div class="circle-clipper left"><div class="circle"></div></div>
-                <div class="gap-patch"><div class="circle"></div></div>
-                <div class="circle-clipper right"><div class="circle"></div></div>
-            </div>
-        </div>
+    <!-- Modal Archivos -->
+    <div id="modal-archivos" class="modal">
+      <div class="modal-content">
+        <h5>Últimos Archivos Generados</h5>
+        <ul id="listaArchivos" class="collection"></ul>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+      </div>
     </div>
+  </div>
 
-    <!-- Materialize JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    
-    <!-- JavaScript personalizado -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar Materialize Modals
-            M.Modal.init(document.querySelectorAll('.modal'));
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      M.AutoInit();
 
-            // Inicializar Datepicker con mejoras
-            let datepickerInstances = M.Datepicker.init(document.querySelectorAll('.datepicker'), {
-                format: 'yyyy-mm',
-                minDate: new Date(2020, 0, 1),
-                maxDate: new Date(),
-                yearRange: [2020, 2025],
-                container: 'body', // Evita que se corte en el modal
-                autoClose: true
-            });
+      // Inicializar Datepicker con configuración optimizada
+      M.Datepicker.init(document.querySelectorAll(".datepicker"), {
+        format: "yyyy-mm",
+        minDate: new Date(2020, 0, 1),
+        maxDate: new Date(),
+        yearRange: [2020, 2025],
+        container: "body",
+        autoClose: true,
+        showClearBtn: false,
+        i18n: {
+          cancel: "Cancelar",
+          done: "Seleccionar",
+          months: [
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre",
+          ],
+          monthsShort: [
+            "Ene",
+            "Feb",
+            "Mar",
+            "Abr",
+            "May",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dic",
+          ],
+          weekdays: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+          weekdaysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+          weekdaysAbbrev: ["D", "L", "M", "M", "J", "V", "S"],
+        },
+      });
 
-            // Función para mostrar y ocultar spinner
-            function mostrarSpinner() {
-                document.getElementById("spinnerContainer").style.display = "flex";
+      const spinner = M.Modal.getInstance(document.querySelector("#modal-spinner"));
+      const mensajeModal = M.Modal.getInstance(document.querySelector("#modal-mensaje"));
+      const archivosModal = M.Modal.getInstance(document.querySelector("#modal-archivos"));
+
+      document.getElementById("ejecutarHoras").addEventListener("click", () => {
+        spinner.open();
+
+        fetch("/ejecutar-horas", { method: "POST" })
+          .then((r) => r.json())
+          .then((data) => {
+            spinner.close();
+            document.getElementById("mensajeTexto").textContent = data.message || "Completado";
+            mensajeModal.open();
+          })
+          .catch(() => {
+            spinner.close();
+            document.getElementById("mensajeTexto").textContent = "Error al ejecutar el proceso.";
+            mensajeModal.open();
+          });
+      });
+
+      document.getElementById("confirmarFecha").addEventListener("click", () => {
+        const fecha = document.getElementById("fechaInput").value;
+        if (!fecha) return;
+
+        window.location.href = `/descargar-csv/${fecha.replace("-", "")}`;
+      });
+
+      document.getElementById("listarArchivos").addEventListener("click", () => {
+        fetch("/listar-archivos")
+          .then((r) => r.json())
+          .then((data) => {
+            const lista = document.getElementById("listaArchivos");
+            lista.innerHTML = "";
+
+            if (!data.archivos || !data.archivos.length) {
+              lista.innerHTML = "<li class='collection-item'>No hay archivos disponibles.</li>";
+              return;
             }
-            function ocultarSpinner() {
-                document.getElementById("spinnerContainer").style.display = "none";
-            }
 
-            // Botón Ejecutar Horas
-            document.getElementById('ejecutarHoras').addEventListener('click', function() {
-                mostrarSpinner();
-                fetch('/ejecutar-horas', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        ocultarSpinner();
-                        mostrarMensaje("Proceso Completado", data.message);
-                    })
-                    .catch(error => {
-                        ocultarSpinner();
-                        mostrarMensaje("Error", "Hubo un problema al ejecutar el proceso.");
-                    });
+            data.archivos.forEach((item) => {
+              const fecha = new Date(item.fecha);
+              const fechaFormateada = fecha.toLocaleString("es-AR", {
+                timeZone: "America/Argentina/Buenos_Aires",
+              });
+
+              const li = document.createElement("li");
+              li.className = "collection-item";
+              li.textContent = `${item.nombre} - ${fechaFormateada}`;
+              lista.appendChild(li);
             });
 
-            // Botón Confirmar Descarga
-            document.getElementById('confirmarDescarga').addEventListener('click', function() {
-                let fechaSeleccionada = document.getElementById('datepicker').value.replace('-', '');
-                if (fechaSeleccionada) {
-                    window.location.href = `/descargar-csv/${fechaSeleccionada}`;
-                } else {
-                    mostrarMensaje("Error", "Selecciona una fecha válida.");
-                }
-            });
-
-            // Botón Ver Últimos Archivos
-            document.getElementById('verArchivos').addEventListener('click', function() {
-                fetch('/listar-archivos')
-                    .then(response => response.json())
-                    .then(data => {
-                        let contenido = "";
-                        data.archivos.forEach(archivo => {
-                            contenido += `<p><strong>${archivo.nombre}</strong> - ${archivo.fecha}</p>`;
-                        });
-                        mostrarMensaje("Últimos Archivos Generados", contenido || "No hay archivos disponibles.");
-                    })
-                    .catch(error => mostrarMensaje("Error", "No se pudo obtener la lista de archivos."));
-            });
-
-            function mostrarMensaje(titulo, mensaje) {
-                document.getElementById('mensajeTitulo').textContent = titulo;
-                document.getElementById('mensajeTexto').innerHTML = mensaje;
-                let instance = M.Modal.getInstance(document.getElementById('modalMensaje'));
-                instance.open();
-            }
-        });
-    </script>
-
+            archivosModal.open();
+          })
+          .catch(() => {
+            const lista = document.getElementById("listaArchivos");
+            lista.innerHTML = "<li class='collection-item red-text'>Error al obtener archivos.</li>";
+            archivosModal.open();
+          });
+      });
+    });
+  </script>
 </body>
 </html>
