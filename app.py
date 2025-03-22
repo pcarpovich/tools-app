@@ -1,8 +1,19 @@
-from flask import Flask, render_template, jsonify, send_from_directory
+from flask import Flask, render_template, jsonify, send_from_directory, Response
 import os
 import subprocess
 from datetime import datetime
 import pytz
+
+# Cargar variables desde .env
+from dotenv import load_dotenv
+load_dotenv()
+
+# AirTable
+from pyairtable import Api
+
+# CSV
+import csv
+import io
 
 app = Flask(__name__)
 CSV_PATH = "/var/www/html/csv_reports/"
@@ -46,6 +57,77 @@ def listar_archivos():
         return jsonify({"archivos": archivos})
     except Exception as e:
         return jsonify({"error": f"Error al listar archivos: {str(e)}"}), 500
+
+@app.route('/clientes', methods=['GET'])
+def obtener_clientes_airtable():
+    try:
+        ACCESS_TOKEN = os.environ.get("AIRTABLE_ACCESS_TOKEN")
+        if not ACCESS_TOKEN:
+            return jsonify({"error": "Token de acceso no configurado"}), 500
+
+        BASE_ID = "appnenEA8D7juDwkq"
+        TABLE_NAME = "tblPlC3tm78fXpXru"
+
+        api = Api(ACCESS_TOKEN)
+        table = api.table(BASE_ID, TABLE_NAME)
+
+        records = table.all()
+
+        all_keys = set()
+        for record in records:
+            all_keys.update(record['fields'].keys())
+
+        all_keys = sorted(all_keys)
+        data = []
+        for record in records:
+            fields = record['fields']
+            row = {key: fields.get(key, "") for key in all_keys}
+            data.append(row)
+
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/clientes.csv', methods=['GET'])
+def obtener_clientes_csv():
+    try:
+        ACCESS_TOKEN = os.environ.get("AIRTABLE_ACCESS_TOKEN")
+        if not ACCESS_TOKEN:
+            return jsonify({"error": "Token de acceso no configurado"}), 500
+
+        BASE_ID = "appnenEA8D7juDwkq"
+        TABLE_NAME = "tblPlC3tm78fXpXru"
+
+        api = Api(ACCESS_TOKEN)
+        table = api.table(BASE_ID, TABLE_NAME)
+
+        records = table.all()
+
+        all_keys = set()
+        for record in records:
+            all_keys.update(record['fields'].keys())
+
+        all_keys = sorted(all_keys)
+
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=all_keys)
+        writer.writeheader()
+
+        for record in records:
+            fields = record['fields']
+            row = {key: fields.get(key, "") for key in all_keys}
+            writer.writerow(row)
+
+        csv_content = output.getvalue()
+        output.close()
+
+        return Response(
+            csv_content,
+            mimetype='text/csv',
+            headers={"Content-Disposition": "attachment; filename=clientes.csv"}
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
