@@ -151,5 +151,27 @@ def generar_servicios_pdf():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/clientes_horas', methods=['GET'])
+def generar_clientes_csv():
+    try:
+        os.chdir("/home/flaskapp/horas")
+        resultado = subprocess.run(
+            ["sudo", "-u", "flaskapp", "venv/bin/python", "clientes_fast.py"],
+            capture_output=True,
+            text=True
+        )
+
+        if resultado.returncode != 0:
+            return jsonify({"error": "Error al generar el CSV", "detalle": resultado.stderr}), 500
+
+        csv_path = os.path.join(CSV_PATH, "clientes_horas.csv")
+        if os.path.exists(csv_path):
+            return send_from_directory(CSV_PATH, "clientes_horas.csv", as_attachment=True)
+        else:
+            return jsonify({"error": "No se encontró el archivo generado"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
